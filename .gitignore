@@ -1,3 +1,5 @@
 input/*
 models/*
 */__pycache__/*
+preds/*
+submission/*

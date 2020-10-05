@@ -88,6 +88,14 @@ def preprocess(df, select_features):
     return df
 
 
+def load_submission_np_array(path):
+    df = pd.read_csv(path)
+    del df["sig_id"]
+    print("loading pred from: ", path)
+
+    return df.values
+
+
 def load_fold(fold, train_features_path, targets_folds_df_path , select_features = False):
 
     df = pd.read_csv(train_features_path)
@@ -138,3 +146,35 @@ def log_loss_metric(y_true, y_pred):
     y_pred_clip = np.clip(y_pred, 1e-15, 1 - 1e-15)
     loss = - np.mean(np.mean(y_true * np.log(y_pred_clip) + (1 - y_true) * np.log(1 - y_pred_clip), axis = 1))
     return loss
+
+
+class blend():
+    def __init__(self,all_preds_np):
+        
+        self.all_preds = all_preds_np
+           
+    def predict(self, weights):
+        self.weights = weights
+        final_pred = np.zeros_like(self.all_preds[0])
+        
+        for i in range(len(self.all_preds)):
+            final_pred += self.all_preds[i] * self.weights[i]
+            
+        final_pred = final_pred/self.weights.sum()
+        
+        return final_pred
+
+
+def inference_fn(model, test_features, device):
+
+    results = np.zeros([test_features.shape[0], 206])
+    test_features_tensor = torch.tensor(test_features).float().to(device)
+    rows = model(test_features_tensor).sigmoid().detach().cpu().numpy()
+    results = rows 
+
+    return results 
+
+def scale_data(data, lower, upper):
+    
+    scaled = np.interp(data, (data.min(), data.max()), (lower, upper))
+    return scaled 

@@ -27,8 +27,7 @@ class Model(nn.Module):
         
         x = self.batch_norm3(x)
         x = self.dropout3(x)
-        x = self.dense3(x)
-        
+        x = self.dense3(x)*2
         return x
 
 

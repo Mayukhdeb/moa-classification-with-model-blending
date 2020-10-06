@@ -30,11 +30,8 @@ sig_ids = pd.read_csv("../input/lish-moa/sample_submission.csv")["sig_id"].value
 
 
 weights_df = pd.read_csv("../models/blend_weights.csv")
-weights = weights_df.values.flatten()[:-2]
-upper = weights_df.values.flatten()[-2]
-lower = weights_df.values.flatten()[-1]
+weights = weights_df.values.flatten()
 
-print("upper, lower", upper, lower)
 
 if __name__ == "__main__":
 
@@ -51,7 +48,6 @@ if __name__ == "__main__":
     blend_boi = blend(all_preds_np= all_preds_np)
     final_preds = blend_boi.predict(weights= weights)
 
-    final_preds = scale_data(final_preds, lower, upper)
 
     pred_df = pd.DataFrame(final_preds, columns= sample_submission_columns)
     pred_df["sig_id"] = sig_ids

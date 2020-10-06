@@ -59,20 +59,11 @@ if __name__ == "__main__":
     
     weights_df = pd.read_csv("../models/blend_weights.csv")
     
-    weights = weights_df.values.flatten()[:-2]
-    upper = weights_df.values.flatten()[-2]
-    lower = weights_df.values.flatten()[-1]
+    weights = weights_df.values.flatten()
 
-    print("upper, lower", upper, lower)
-
+    print(weights)
     final_preds = blend_boi.predict(weights= weights)
-    final_preds_scaled = scale_data(final_preds, lower, upper)
 
     blend_loss = log_loss_metric(y_val, final_preds) 
-    blend_loss_scaled = log_loss_metric(y_val, final_preds_scaled) 
 
     print("blend loss: ", blend_loss)
-    print("blend loss scaled: ", blend_loss_scaled)
-
-
-    # print(final_preds[:1], y_val[:1], log_loss_metric(y_val[:1], final_preds[:1]))

@@ -57,6 +57,3 @@ if __name__ == "__main__":
     save_name = "../submission/submission.csv"
     print("saved: ", save_name)
     pred_df.to_csv(save_name, index = False)
-
-    # plt.plot(final_preds[0])
-    # plt.show()

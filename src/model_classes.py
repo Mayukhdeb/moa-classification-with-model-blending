@@ -2,6 +2,12 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 
+"""
+Warning, I might've not used these models for the final inference. 
+
+For the final model architectures, check ../notebooks folder 
+"""
+
 class Model(nn.Module):
     def __init__(self):
         super(Model, self).__init__()
@@ -17,7 +23,6 @@ class Model(nn.Module):
         self.dropout3 = nn.Dropout(0.5)
         self.dense3 = nn.utils.weight_norm(nn.Linear(1048, 206))
         
-        self.scalar = 2.0
     
     def forward(self, x):
         x = self.batch_norm1(x)
@@ -30,7 +35,7 @@ class Model(nn.Module):
         
         x = self.batch_norm3(x)
         x = self.dropout3(x)
-        x = self.dense3(x)* self.scalar
+        x = self.dense3(x)
         return x
 
 
@@ -47,7 +52,6 @@ class Model_2(nn.Module):
         self.dropout3 = nn.Dropout(0.5)
         self.dense3 = nn.utils.weight_norm(nn.Linear(2048, 206))
     
-        self.scalar = 2.0
     def forward(self, x):
         x = self.batch_norm1(x)
         x = self.dropout1(x)
@@ -56,6 +60,6 @@ class Model_2(nn.Module):
         
         x = self.batch_norm3(x)
         x = self.dropout3(x)
-        x = self.dense3(x)*self.scalar
+        x = self.dense3(x)
         
         return x

@@ -61,7 +61,7 @@ if __name__ == "__main__":
     
     weights = weights_df.values.flatten()
 
-    print(weights)
+    # print(weights)
     final_preds = blend_boi.predict(weights= weights)
 
     blend_loss = log_loss_metric(y_val, final_preds) 

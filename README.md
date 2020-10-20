@@ -6,24 +6,13 @@ This repo would contain a cleaner version of the solution to the kaggle [MoA pre
 
 Will add documentation and explanations after the competition ends.
 
-## List of things that have been working very well
-
-* Feature selection with `VarianceThreshold`
-* Label smoothing with dual loss: Using the `LabelSmoothedLoss` for backprop and the normal `nn.BCEWithLogitsLoss()` for early stopping
-* "Repeat" layers which is not a real thing, but it works well. It's similar to residual layers with `layer_size = (880,880)`
-* Single model, multiple fold preds blending with optuna using OOF preds as a metric for loss 
-
-
-## What can be done 
-* Try and incorporate the old 2nd model with residual layers 
-* Use optuna instead of using `lr = 4e-3` and `decay_rate = 0.1` and pray that it works
-
 ## Our approach in detail:
 
 ### Preprocessing
 * Some of the columns in the dataset were not numbers, so we had to map those values to numbers between `0.` and `1.`
 * We started off by using `VarianceThreshold` on the columns to determine the columns with the highest variance on all of the train/test features. This gave us 785 columns out of 875. 
-
+* Created Folds in the dataset and set the last fold as the "holdout set" which would not be used for training, but would be only used for blending. Since the problem was a multi label probability prediction problem, we had to use `MultilabelStratifiedKFold` [1].
+ 
 ### Building model(s)
 * We went for the simple shallow NN approach and build 2 pytorch NNs:
     * `Model()` had an input size of `785`, to be trained on the features with a high variance
@@ -93,7 +82,7 @@ The rest of the things that helped in training are:
 
 ### Blending 
 
-Blending here means finding the weighted average of `n` predictions from `n` models where the weights are optimized in order to minimize the loss on the holdout set. This was done in the following steps:
+Blending [2] here means finding the weighted average of `n` predictions from `n` models where the weights are optimized in order to minimize the loss on the holdout set. This was done in the following steps:
 
 1. Loading all the trained models and generating their predictions on the holdout features. 
 2. Build a class `blend()` that stores all of the predictions on the holdout set. It should also contain a `predict()` function that generates a weighted average of the stored predictions with the weights as the argument. 
@@ -109,6 +98,14 @@ Blending here means finding the weighted average of `n` predictions from `n` mod
             """
         return weighted_average
     ```
-3. Initialize an optuna study that minimizes the log loss of the predictions by varying the weights. Optionally, one could also threshold the weights such that any weight that is less than `0.1` becomes `0` to ignore the "weak" models.
+3. Initialize an optuna study [3] that minimizes the log loss of the predictions by varying the weights. Optionally, one could also threshold the weights such that any weight that is less than `0.1` becomes `0` to ignore the "weak" models.
 
 4. Use the same optimized weights and generate the final submissions. 
+
+References:
+
+[1] [MultiLabelStratifiedKfold](https://github.com/trent-b/iterative-stratification)
+
+[2] [Kaggle ensembling guide](https://mlwave.com/kaggbe-ensembling-guide/)
+
+[3] [Optuna docs](https://optuna.readthedocs.io/en/stable/)

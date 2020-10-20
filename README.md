@@ -68,14 +68,8 @@ We optimized the learning rate and the lr decay rate with optuna, with 3 epochs 
 
 ### Training
 
-We had to use 2 loss functions within the training loop:
 
-* `LabelSmoothingCrossEntropy()` for backpropagation.
-* `nn.BCEWithLogitsLoss()` for early stopping.
-
-#### But why 2 loss functions ?
-
-Multiple sources in the kaggle discussions confirmed that the labels in the training data were **not 100% correct**. Which means there's a high risk of the model learning wrong feature-label mappings while training. And this might lead to highly confident wrong predictions on the test. 
+We had to use 2 loss functions within the training loop:he training data were **not 100% correct**. Which means there's a high risk of the model learning wrong feature-label mappings while training. And this might lead to highly confident wrong predictions on the test. 
 
 Log loss is known to highly penalize confident wrong predictions, so even one single higly confident wrong prediction could make a deifference in the LB score. The solution to this was **label smoothing**.
 
@@ -87,11 +81,34 @@ A smoothing factor of `0.2` in `LabelSmoothingCrossEntropy()` meant the predicti
 
 The rest of the things that helped in training are: 
 * `ReduceLROnPlateau` reduced the learning rate  by a factor of 0.1 whenever the loss plateaued.
-* Weight decay helped in regularization by adding the squared sum of weights multiplied by a `decay_factor` to the loss function.
+* **Weight decay** helped in regularization by adding the squared sum of weights multiplied by a `decay_factor` to the loss function.
 
     * Hence the new loss looked like:
     ```python
     regularized_loss = log_loss + decay_factor*(sum_of_squared_weights)
     ```
 
-**Note**: Both the models were trained on the same exact set of folds. 
+    **Note**: Both the models were trained on the same exact set of folds. 
+* **K fold cross validation** was used to train a total of 20 models, each of which were saved for inference/blending later on. 
+
+### Blending 
+
+Blending here means finding the weighted average of `n` predictions from `n` models where the weights are optimized in order to minimize the loss on the holdout set. This was done in the following steps:
+
+1. Loading all the trained models and generating their predictions on the holdout features. 
+2. Build a class `blend()` that stores all of the predictions on the holdout set. It should also contain a `predict()` function that generates a weighted average of the stored predictions with the weights as the argument. 
+
+    ```python
+    class blend():
+        def __init__(self, preds):
+            self.preds = preds
+
+        def predict(self, weights):
+            """
+            calculate weighted average here
+            """
+        return weighted_average
+    ```
+3. Initialize an optuna study that minimizes the log loss of the predictions by varying the weights. Optionally, one could also threshold the weights such that any weight that is less than `0.1` becomes `0` to ignore the "weak" models.
+
+4. Use the same optimized weights and generate the final submissions. 

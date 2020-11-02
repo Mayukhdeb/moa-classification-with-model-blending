@@ -102,6 +102,9 @@ Blending [2] here means finding the weighted average of `n` predictions from `n`
 
 4. Use the same optimized weights and generate the final submissions. 
 
+## To-do:
+1. Try and use RankGauss
+
 References:
 
 [1] [MultiLabelStratifiedKfold](https://github.com/trent-b/iterative-stratification)
